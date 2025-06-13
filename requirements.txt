@@ -3,3 +3,5 @@ pandas
 transformers
 torch
 datasets
+sentence-transformers
+faiss-cpu
