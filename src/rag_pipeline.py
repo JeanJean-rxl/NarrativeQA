@@ -69,5 +69,5 @@ def process_sample(sample, chunk_words=150, top_k=3, model=None):
         "answers": [a["text"] for a in answers],
         "exact_match": em,
         "fuzzy_score": fuzzy,
-        # "retrieved_context": context
+        "retrieved_context": context
     }

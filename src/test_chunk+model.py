@@ -5,6 +5,19 @@ import pandas as pd
 from tqdm import tqdm
 import time
 
+import gc
+import torch
+from transformers import T5Tokenizer, T5ForConditionalGeneration
+
+def load_model_safely(model_path):
+    gc.collect()
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+    tokenizer = T5Tokenizer.from_pretrained(model_path)
+    model = T5ForConditionalGeneration.from_pretrained(model_path)
+    return tokenizer, model
+
+
 def get_llm_pipeline(model_name):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -17,14 +30,18 @@ samples = test_data.select(range(100))
 
 # 实验配置：chunk × model
 configs = [
-    ("google/flan-t5-base", 64),
-    ("google/flan-t5-base", 128),
-    ("google/flan-t5-base", 256),
-    ("google/flan-t5-base", 512),
-    ("google/flan-t5-large", 64),
-    ("google/flan-t5-large", 128),
-    ("google/flan-t5-large", 256),
-    ("google/flan-t5-large", 512),
+    # ("google/flan-t5-base", 64),
+    # ("google/flan-t5-base", 128),
+    # ("google/flan-t5-base", 256),
+    # ("google/flan-t5-base", 512),
+    # ("google/flan-t5-large", 64),
+    # ("google/flan-t5-large", 128),
+    # ("google/flan-t5-large", 256),
+    # ("google/flan-t5-large", 512),
+    ("./flan-t5-finetune", 64),
+    ("./flan-t5-finetune", 128),
+    ("./flan-t5-finetune", 256),
+    ("./flan-t5-finetune", 512),
 ]
 
 summary = []
@@ -32,7 +49,7 @@ all_results = []
 
 for model_name, chunk_size in configs:
     print(f"\n🚀 Running {model_name} | chunk_words={chunk_size}")
-    llm = get_llm_pipeline(model_name)
+    llm = load_model_safely(model_name)
 
     results = []
     for i, sample in enumerate(tqdm(samples)):
