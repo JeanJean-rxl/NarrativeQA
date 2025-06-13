@@ -6,7 +6,8 @@ tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
 # 加载 NarrativeQA 训练集（建议先取部分调试）
-ds = load_dataset("deepmind/narrativeqa", split="train[:1000]")
+# ds = load_dataset("deepmind/narrativeqa", split="train[:1000]")
+ds = load_dataset("deepmind/narrativeqa", split="train[:1000]", download_mode="force_redownload")
 
 # 构造训练样本
 def preprocess(example):
@@ -38,7 +39,7 @@ args = TrainingArguments(
     learning_rate=5e-5,
     weight_decay=0.01,
     logging_dir="./logs",
-    fp16=False,
+    fp16=True,  # when using GPU with mixed precision
 )
 
 # Trainer
