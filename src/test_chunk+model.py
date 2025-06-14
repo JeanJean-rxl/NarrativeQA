@@ -4,24 +4,41 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 import pandas as pd
 from tqdm import tqdm
 import time
-
-import gc
+from datasets import load_dataset
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from peft import PeftModel, PeftConfig
 import torch
-from transformers import T5Tokenizer, T5ForConditionalGeneration
-
-def load_model_safely(model_path):
-    gc.collect()
-    if torch.backends.mps.is_available():
-        torch.mps.empty_cache()
-    tokenizer = T5Tokenizer.from_pretrained(model_path)
-    model = T5ForConditionalGeneration.from_pretrained(model_path)
-    return tokenizer, model
+from rag_pipeline import process_sample
+import torch
+torch.set_num_threads(1)
 
 
 def get_llm_pipeline(model_name):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     return pipeline("text2text-generation", model=model, tokenizer=tokenizer)
+
+
+def get_llm_from_pretrained(model_path):
+    peft_config = PeftConfig.from_pretrained(model_path)
+    base_model = AutoModelForSeq2SeqLM.from_pretrained(peft_config.base_model_name_or_path)
+    model = PeftModel.from_pretrained(base_model, model_path).eval()
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    def llm_infer(prompt, max_new_tokens=64):
+        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+        with torch.no_grad():
+            outputs = model.generate(**inputs, max_new_tokens=max_new_tokens)
+
+        return [
+            {"generated_text": tokenizer.decode(output, skip_special_tokens=True)}
+            for output in outputs
+        ]
+
+    return llm_infer  # ⚠️ 返回的是函数（行为类似 pipeline）
 
 # 加载 test 数据（预对齐）
 ds = load_dataset("deepmind/narrativeqa")
@@ -30,7 +47,7 @@ samples = test_data.select(range(100))
 
 # 实验配置：chunk × model
 configs = [
-    # ("google/flan-t5-base", 64),
+    ("checkpoints/last", 64),
     # ("google/flan-t5-base", 128),
     # ("google/flan-t5-base", 256),
     # ("google/flan-t5-base", 512),
@@ -38,18 +55,12 @@ configs = [
     # ("google/flan-t5-large", 128),
     # ("google/flan-t5-large", 256),
     # ("google/flan-t5-large", 512),
-    ("./flan-t5-finetune", 64),
-    ("./flan-t5-finetune", 128),
-    ("./flan-t5-finetune", 256),
-    ("./flan-t5-finetune", 512),
 ]
 
-summary = []
-all_results = []
 
 for model_name, chunk_size in configs:
     print(f"\n🚀 Running {model_name} | chunk_words={chunk_size}")
-    llm = load_model_safely(model_name)
+    llm = get_llm_from_pretrained(model_name)
 
     results = []
     for i, sample in enumerate(tqdm(samples)):
@@ -58,8 +69,11 @@ for model_name, chunk_size in configs:
             "question": {"text": sample["question"]["text"]},
             "answers": sample["answers"]
         }
+
         try:
             result = process_sample(sample_dict, chunk_words=chunk_size, model=llm)
+            # print(result)
+            # print(result.keys())
             result.update({
                 "sample_index": i,
                 "model": model_name,
@@ -71,23 +85,3 @@ for model_name, chunk_size in configs:
 
     df = pd.DataFrame(results)
     df.to_csv(f"data/rag_results_{model_name.split('/')[-1]}_chunk{chunk_size}.csv", index=False)
-    all_results.extend(results)
-
-    # 计算 summary
-    fuzzy_over_90 = df[df["fuzzy_score"] >= 0.9]
-    em_exact = df[df["exact_match"] == True]
-    summary.append({
-        "model": model_name,
-        "chunk_words": chunk_size,
-        "fuzzy>=0.9": len(fuzzy_over_90),
-        "EM==True": len(em_exact),
-        "total": len(df),
-        "fuzzy_rate": len(fuzzy_over_90) / len(df),
-        "em_rate": len(em_exact) / len(df)
-    })
-
-# 汇总 summary
-summary_df = pd.DataFrame(summary)
-summary_df.to_csv("summary_results.csv", index=False)
-print("\n📊 Summary:")
-print(summary_df[["model", "chunk_words", "fuzzy_rate", "em_rate"]])

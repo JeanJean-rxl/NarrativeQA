@@ -1,0 +1,9 @@
+model,chunk_words,scope_tokens,fuzzy_rate_80,em_rate,total
+flan-t5-base,64,192,0.09,0.06,100
+flan-t5-base,256,768,0.07,0.05,100
+flan-t5-base,512,1536,0.06,0.05,100
+flan-t5-large,64,192,0.09,0.07,100
+flan-t5-large,128,384,0.07,0.04,100
+flan-t5-large,256,768,0.1,0.07,100
+flan-t5-large,512,1536,0.1,0.08,100
+last,64,192,0.06,0.06,100

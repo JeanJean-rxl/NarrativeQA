@@ -8,6 +8,7 @@ files = glob.glob("data/rag_results_*.csv")
 summary_rows = []
 
 for file in files:
+    print(f"📊 处理文件: {file}")
     df = pd.read_csv(file)
 
     # 提取模型名和chunk大小
