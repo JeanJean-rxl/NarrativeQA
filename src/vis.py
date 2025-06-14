@@ -2,13 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 读取 summary
-df = pd.read_csv("summary_results.csv")
 
-# 如果你之前没加，可以清理空格
+df = pd.read_csv("summary_results.csv")
 df.columns = df.columns.str.strip()
 
-# 可视化 fuzzy
 plt.figure(figsize=(10, 6))
 sns.lineplot(
     data=df,
