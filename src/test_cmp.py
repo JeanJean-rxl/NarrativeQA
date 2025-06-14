@@ -10,10 +10,11 @@ for file in files:
     print(f"📊 processing: {file}")
     df = pd.read_csv(file)
 
-    match = re.search(r"data/rag_results_(.+)_chunk(\d+)\.csv", file)
+    match = re.search(r"rag_results_(.+)_chunk(\d+)_sample(\d+)\.csv", file)
     if match:
         model = match.group(1)
         chunk_words = int(match.group(2))
+        num_samples = int(match.group(3))
     else:
         print(f"⚠️ filename unmatch: {file}")
         continue

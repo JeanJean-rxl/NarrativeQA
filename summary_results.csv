@@ -1,5 +1,8 @@
 model,chunk_words,scope_tokens,fuzzy_rate_50,fuzzy_rate_80,em_rate,total
 checkpoint-16374,64,192,0.18,0.07,0.05,100
+checkpoint-16374,64,192,0.207,0.078,0.056,1000
+checkpoint-32748,64,192,0.2,0.08,0.05,100
+checkpoint-49122,64,192,0.19,0.08,0.05,100
 flan-t5-base,64,192,0.16,0.09,0.06,100
 flan-t5-base,256,768,0.1,0.07,0.05,100
 flan-t5-base,512,1536,0.15,0.06,0.05,100

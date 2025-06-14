@@ -70,7 +70,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run RAG-style evaluation on NarrativeQA with chunked context")
     parser.add_argument("--model_path", type=str, required=True, help="Path to HF or LoRA model")
     parser.add_argument("--chunk_sizes", type=int, nargs="+", default=[64], help="List of chunk sizes to evaluate")
-    parser.add_argument("--num_samples", type=int, default=1000, help="Number of test samples to evaluate")
+    parser.add_argument("--num_samples", type=int, default=100, help="Number of test samples to evaluate")
     parser.add_argument("--output_dir", type=str, default="data", help="Directory to save CSV results")
     args = parser.parse_args()
 

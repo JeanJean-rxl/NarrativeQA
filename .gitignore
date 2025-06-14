@@ -4,6 +4,7 @@ __pycache__/
 .vscode/
 *.npy
 *.pkl
+*.csv
 .DS_Store
 venv/
 data/

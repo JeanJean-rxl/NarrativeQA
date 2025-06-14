@@ -55,7 +55,9 @@ def train_model(
     tokenized = ds.map(lambda ex: preprocess(ex, tokenizer), remove_columns=ds.column_names)
 
     # Output directory
-    output_dir = f'checkpoints_{model_name.split("/")[1]}_{dataset_split}_{num_train_epochs}_{batch_size}_{lora_r}_{lora_alpha}_{lora_dropout}'
+    if dataset_split.endswith("[:5000]"):
+        num_dataset_split = "train5000"
+    output_dir = f'checkpoints_{model_name.split("/")[1]}_{num_dataset_split}_{num_train_epochs}_{batch_size}_{lora_r}_{lora_alpha}_{lora_dropout}'
     os.makedirs(output_dir, exist_ok=True)
 
     # Training args
@@ -91,7 +93,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--model_name", type=str, default="google/flan-t5-base",
                         help="Base model to fine-tune")
-    parser.add_argument("--dataset_split", type=str, default="train",
+    parser.add_argument("--dataset_split", type=str, default="train[:5000]",
                         help="Subset of the dataset to use")
     parser.add_argument("--num_train_epochs", type=int, default=3,
                         help="Number of training epochs")
