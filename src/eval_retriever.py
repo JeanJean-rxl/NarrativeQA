@@ -44,10 +44,10 @@ if __name__ == "__main__":
     triplet_file = "data/triplets_test5000.jsonl"
     queries, positives, passages = load_triplets(triplet_file)
 
-    print("\n🔹 Evaluating original model:")
-    evaluate_retrieval("sentence-transformers/all-MiniLM-L6-v2", queries, positives, passages)
+    # print("\n🔹 Evaluating original model:")
+    # evaluate_retrieval("sentence-transformers/all-MiniLM-L6-v2", queries, positives, passages)
 
     print("\n🔹 Evaluating fine-tuned model:")
-    evaluate_retrieval("dense_encoder_finetuned_train1950_epoch3_margin0.5", queries, positives, passages)
+    evaluate_retrieval("dense_encoder_finetuned_trainall_epoch3_margin0.2", queries, positives, passages)
     # evaluate_retrieval("dense_encoder_finetuned_train3769_epoch1", queries, positives, passages)
     # evaluate_retrieval("dense_encoder_finetuned_train3769_epoch1", queries, positives, passages)
